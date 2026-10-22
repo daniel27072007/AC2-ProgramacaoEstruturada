@@ -156,13 +156,13 @@ void cadastrar_aluno(Aluno **cadastro, int *total, int *capacidade) {
     getchar();
     
     do {
-        printf("Semestre (1 a 3): ");
+        printf("Semestre: ");
         scanf("%d", &novo.semestre);
         getchar();
-        if (novo.semestre < 1 || novo.semestre > 3) {
-            printf("ERRO: Semestre invalido! Digite entre 1 e 3.\n");
+        if (novo.semestre < 1) {
+            printf("ERRO: Numero de semestre invalido!\n");
         }
-    } while (novo.semestre < 1 || novo.semestre > 3);
+    } while (novo.semestre < 1);
     
     printf("Nome do curso: ");
     fgets(novo.curso_matriculado.nome_curso, sizeof(novo.curso_matriculado.nome_curso), stdin);
