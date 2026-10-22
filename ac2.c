@@ -49,7 +49,7 @@ int main() {
         printf("3 - Atualizar\n");
         printf("4 - Remover\n");
         printf("5 - Listar\n");
-        printf("6 - Sair\n");
+        printf("0 - Sair\n");
         printf("\nOpcao: ");
         scanf("%i", &op);
         getchar(); // Limpa o buffer do teclado
@@ -71,14 +71,14 @@ int main() {
             case 5:
                 listar_alunos(cadastro, total);
                 break;
-            case 6:
+            case 0:
                 salvar_e_sair(cadastro, total);
                 break;
             default:
                 printf("Opcao invalida! Tente novamente.\n");
         }
         
-    } while(op != 6);
+    } while(op != 0);
 
     return 0;
 }
@@ -156,19 +156,19 @@ void cadastrar_aluno(Aluno **cadastro, int *total, int *capacidade) {
     getchar();
     
     do {
-        printf("Semestre (1 a 3): ");
+        printf("Semestre (1 a 10): ");
         scanf("%d", &novo.semestre);
         getchar();
-        if (novo.semestre < 1 || novo.semestre > 3) {
-            printf("ERRO: Semestre invalido! Digite entre 1 e 3.\n");
+        if (novo.semestre < 1 || novo.semestre >= 10) {
+            printf("ERRO: Semestre invalido! Digite entre 1 e 10.\n");
         }
-    } while (novo.semestre < 1 || novo.semestre > 3);
+    } while (novo.semestre < 1 || novo.semestre > 10);
     
     printf("Nome do curso: ");
     fgets(novo.curso_matriculado.nome_curso, sizeof(novo.curso_matriculado.nome_curso), stdin);
     novo.curso_matriculado.nome_curso[strcspn(novo.curso_matriculado.nome_curso, "\n")] = 0;
     
-    printf("Carga horaria do curso: ");
+    printf("Horas concluidas: ");
     scanf("%d", &novo.curso_matriculado.carga_horaria);
     getchar();
     
@@ -193,7 +193,7 @@ void buscar_aluno(Aluno *cadastro, int total) {
             printf("Nome: %s\n", (cadastro + i)->nome);
             printf("RA: %d\n", (cadastro + i)->ra);
             printf("Semestre: %d\n", (cadastro + i)->semestre);
-            printf("Curso: %s | Carga Horaria: %dh\n", 
+            printf("Curso: %s | Horas concluidas: %dh\n", 
                    (cadastro + i)->curso_matriculado.nome_curso,
                    (cadastro + i)->curso_matriculado.carga_horaria);
             printf("-----------------------------------------\n");
@@ -234,13 +234,13 @@ void atualizar_aluno(Aluno *cadastro, int total) {
             getchar();
             if (resp == 's' || resp == 'S') {
                 do {
-                    printf("Novo semestre (1 a 3): ");
+                    printf("Novo semestre (1 a 10): ");
                     scanf("%d", &(cadastro + i)->semestre);
                     getchar();
-                    if ((cadastro + i)->semestre < 1 || (cadastro + i)->semestre > 3) {
-                        printf("ERRO: Semestre invalido! Digite entre 1 e 3.\n");
+                    if ((cadastro + i)->semestre < 1 || (cadastro + i)->semestre > 10) {
+                        printf("ERRO: Semestre invalido! Digite entre 1 e 10.\n");
                     }
-                } while ((cadastro + i)->semestre < 1 || (cadastro + i)->semestre > 3);
+                } while ((cadastro + i)->semestre < 1 || (cadastro + i)->semestre > 10);
             }
             
             // Atualizar Nome do Curso
@@ -254,11 +254,11 @@ void atualizar_aluno(Aluno *cadastro, int total) {
             }
             
             // Atualizar Carga Horária
-            printf("Deseja atualizar a carga horaria do curso? (s/n): ");
+            printf("Deseja atualizar a quantidade de horas concluidas? (s/n): ");
             scanf(" %c", &resp);
             getchar();
             if (resp == 's' || resp == 'S') {
-                printf("Nova carga horaria (em horas): ");
+                printf("Nova quantidade de horas concluidas: ");
                 scanf("%d", &(cadastro + i)->curso_matriculado.carga_horaria);
                 getchar();
             }
