@@ -203,9 +203,11 @@ void buscar_aluno(Aluno *cadastro, int total) {
     printf("Aluno com RA %d nao encontrado.\n", ra_busca);
 }
 
-// Atualiza dados cadastrais do aluno
+// Atualiza dados cadastrais do aluno perguntando campo a campo com (y/n)
 void atualizar_aluno(Aluno *cadastro, int total) {
     int ra_busca;
+    char resp;
+    
     printf("=== ATUALIZAR ALUNO ===\n");
     printf("Digite o RA do aluno que deseja atualizar: ");
     scanf("%d", &ra_busca);
@@ -213,19 +215,53 @@ void atualizar_aluno(Aluno *cadastro, int total) {
     
     for (int i = 0; i < total; i++) {
         if ((cadastro + i)->ativo == 1 && (cadastro + i)->ra == ra_busca) {
-            printf("Aluno encontrado: %s\n", (cadastro + i)->nome);
+            printf("\nAluno encontrado: %s\n", (cadastro + i)->nome);
+            printf("Responda com 'y' para sim ou 'n' para nao.\n\n");
             
-            printf("Novo nome do aluno: ");
-            fgets((cadastro + i)->nome, sizeof((cadastro + i)->nome), stdin);
-            (cadastro + i)->nome[strcspn((cadastro + i)->nome, "\n")] = 0;
-            
-            printf("Novo semestre (1 a 3): ");
-            scanf("%d", &(cadastro + i)->semestre);
+            // Atualizar Nome
+            printf("Deseja atualizar o nome do aluno? (y/n): ");
+            scanf(" %c", &resp);
             getchar();
+            if (resp == 'y' || resp == 'Y') {
+                printf("Novo nome do aluno: ");
+                fgets((cadastro + i)->nome, sizeof((cadastro + i)->nome), stdin);
+                (cadastro + i)->nome[strcspn((cadastro + i)->nome, "\n")] = 0;
+            }
             
-            printf("Novo nome do curso: ");
-            fgets((cadastro + i)->curso_matriculado.nome_curso, sizeof((cadastro + i)->curso_matriculado.nome_curso), stdin);
-            (cadastro + i)->curso_matriculado.nome_curso[strcspn((cadastro + i)->curso_matriculado.nome_curso, "\n")] = 0;
+            // Atualizar Semestre
+            printf("Deseja atualizar o semestre? (y/n): ");
+            scanf(" %c", &resp);
+            getchar();
+            if (resp == 'y' || resp == 'Y') {
+                do {
+                    printf("Novo semestre (1 a 3): ");
+                    scanf("%d", &(cadastro + i)->semestre);
+                    getchar();
+                    if ((cadastro + i)->semestre < 1 || (cadastro + i)->semestre > 3) {
+                        printf("ERRO: Semestre invalido! Digite entre 1 e 3.\n");
+                    }
+                } while ((cadastro + i)->semestre < 1 || (cadastro + i)->semestre > 3);
+            }
+            
+            // Atualizar Nome do Curso
+            printf("Deseja atualizar o nome do curso? (y/n): ");
+            scanf(" %c", &resp);
+            getchar();
+            if (resp == 'y' || resp == 'Y') {
+                printf("Novo nome do curso: ");
+                fgets((cadastro + i)->curso_matriculado.nome_curso, sizeof((cadastro + i)->curso_matriculado.nome_curso), stdin);
+                (cadastro + i)->curso_matriculado.nome_curso[strcspn((cadastro + i)->curso_matriculado.nome_curso, "\n")] = 0;
+            }
+            
+            // Atualizar Carga Horária
+            printf("Deseja atualizar a carga horaria do curso? (y/n): ");
+            scanf(" %c", &resp);
+            getchar();
+            if (resp == 'y' || resp == 'Y') {
+                printf("Nova carga horaria (em horas): ");
+                scanf("%d", &(cadastro + i)->curso_matriculado.carga_horaria);
+                getchar();
+            }
             
             printf("\nDados atualizados com sucesso!\n");
             return;
@@ -268,11 +304,12 @@ void listar_alunos(Aluno *cadastro, int total) {
         printf("\n--- LISTA DE TODOS OS ALUNOS ATIVOS ---\n");
         for (int i = 0; i < total; i++) {
             if ((cadastro + i)->ativo == 1) {
-                printf("RA: %d | Nome: %s | Semestre: %d | Curso: %s\n",
+                printf("RA: %d | Nome: %s | Semestre: %d | Curso: %s (%dh)\n",
                        (cadastro + i)->ra,
                        (cadastro + i)->nome,
                        (cadastro + i)->semestre,
-                       (cadastro + i)->curso_matriculado.nome_curso);
+                       (cadastro + i)->curso_matriculado.nome_curso,
+                       (cadastro + i)->curso_matriculado.carga_horaria);
                 encontrou = 1;
             }
         }
@@ -285,10 +322,11 @@ void listar_alunos(Aluno *cadastro, int total) {
         printf("\n--- ALUNOS MATRICULADOS NO CURSO: %s ---\n", curso_busca);
         for (int i = 0; i < total; i++) {
             if ((cadastro + i)->ativo == 1 && strcmp((cadastro + i)->curso_matriculado.nome_curso, curso_busca) == 0) {
-                printf("RA: %d | Nome: %s | Semestre: %d\n",
+                printf("RA: %d | Nome: %s | Semestre: %d (%dh)\n",
                        (cadastro + i)->ra,
                        (cadastro + i)->nome,
-                       (cadastro + i)->semestre);
+                       (cadastro + i)->semestre,
+                       (cadastro + i)->curso_matriculado.carga_horaria);
                 encontrou = 1;
             }
         }
