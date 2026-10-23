@@ -8,12 +8,13 @@ typedef struct {
     int carga_horaria;
 } Curso;
 
-// STRUCT 2: Principal (possui 5 campos, atendendo ao requisito de 4+)
+// STRUCT 2: Principal (possui mais de 4 campos)
 typedef struct {
     int ra;
     char nome[100];
     int semestre;
-    int ativo; // 1 = ativo, 0 = removido (exclusão lógica)
+    char status; // 'A' = Ativo, 'I' = Inativo (situação acadêmica)
+    int ativo;   // 1 = Registro válido no sistema, 0 = Removido/Deletado
     Curso curso_matriculado; // Estrutura aninhada
 } Aluno;
 
@@ -144,7 +145,8 @@ void cadastrar_aluno(Aluno **cadastro, int *total, int *capacidade) {
     }
     
     Aluno novo;
-    novo.ativo = 1; // Aluno ativo por padrão
+    novo.ativo = 1;   // Registro válido no sistema
+    novo.status = 'A'; // Status acadêmico inicial padrão é 'A' (Ativo)
     
     printf("=== CADASTRAR ALUNO ===\n");
     printf("Nome do aluno: ");
@@ -159,7 +161,7 @@ void cadastrar_aluno(Aluno **cadastro, int *total, int *capacidade) {
         printf("Semestre (1 a 10): ");
         scanf("%d", &novo.semestre);
         getchar();
-        if (novo.semestre < 1 || novo.semestre >= 10) {
+        if (novo.semestre < 1 || novo.semestre > 10) {
             printf("ERRO: Semestre invalido! Digite entre 1 e 10.\n");
         }
     } while (novo.semestre < 1 || novo.semestre > 10);
@@ -178,7 +180,7 @@ void cadastrar_aluno(Aluno **cadastro, int *total, int *capacidade) {
     printf("\nAluno cadastrado com sucesso!\n");
 }
 
-// Busca aluno por RA (utiliza ponteiro simples)
+// Busca aluno por RA (filtra apenas se ativo == 1)
 void buscar_aluno(Aluno *cadastro, int total) {
     int ra_busca;
     printf("=== BUSCAR ALUNO ===\n");
@@ -193,6 +195,7 @@ void buscar_aluno(Aluno *cadastro, int total) {
             printf("Nome: %s\n", (cadastro + i)->nome);
             printf("RA: %d\n", (cadastro + i)->ra);
             printf("Semestre: %d\n", (cadastro + i)->semestre);
+            printf("Status Academico: %c\n", (cadastro + i)->status);
             printf("Curso: %s | Horas concluidas: %dh\n", 
                    (cadastro + i)->curso_matriculado.nome_curso,
                    (cadastro + i)->curso_matriculado.carga_horaria);
@@ -203,7 +206,7 @@ void buscar_aluno(Aluno *cadastro, int total) {
     printf("Aluno com RA %d nao encontrado.\n", ra_busca);
 }
 
-// Atualiza dados cadastrais do aluno perguntando campo a campo com (s/n)
+// Atualiza dados cadastrais e permite alterar o status acadêmico ('A' ou 'I')
 void atualizar_aluno(Aluno *cadastro, int total) {
     int ra_busca;
     char resp;
@@ -242,6 +245,24 @@ void atualizar_aluno(Aluno *cadastro, int total) {
                     }
                 } while ((cadastro + i)->semestre < 1 || (cadastro + i)->semestre > 10);
             }
+
+            // Atualizar Status Acadêmico ('A' ou 'I')
+            printf("Deseja atualizar o status academico ('A' ou 'I')? (s/n): ");
+            scanf(" %c", &resp);
+            getchar();
+            if (resp == 's' || resp == 'S') {
+                do {
+                    printf("Novo status ('A' para Ativo, 'I' para Inativo): ");
+                    scanf(" %c", &(cadastro + i)->status);
+                    getchar();
+                    if ((cadastro + i)->status >= 'a' && (cadastro + i)->status <= 'z') {
+                        (cadastro + i)->status -= 32; // Converte para maiúsculo
+                    }
+                    if ((cadastro + i)->status != 'A' && (cadastro + i)->status != 'I') {
+                        printf("ERRO: Status invalido! Digite 'A' ou 'I'.\n");
+                    }
+                } while ((cadastro + i)->status != 'A' && (cadastro + i)->status != 'I');
+            }
             
             // Atualizar Nome do Curso
             printf("Deseja atualizar o nome do curso? (s/n): ");
@@ -270,7 +291,7 @@ void atualizar_aluno(Aluno *cadastro, int total) {
     printf("Aluno com RA %d nao encontrado.\n", ra_busca);
 }
 
-// Exclusão lógica do aluno (muda ativo para 0)
+// Exclusão lógica do aluno (muda ativo para 0, ocultando-o do sistema)
 void remover_aluno(Aluno *cadastro, int total) {
     int ra_busca;
     printf("=== REMOVER ALUNO ===\n");
@@ -280,7 +301,7 @@ void remover_aluno(Aluno *cadastro, int total) {
     
     for (int i = 0; i < total; i++) {
         if ((cadastro + i)->ativo == 1 && (cadastro + i)->ra == ra_busca) {
-            (cadastro + i)->ativo = 0;
+            (cadastro + i)->ativo = 0; // Oculta o registro do sistema
             printf("Aluno %s removido com sucesso!\n", (cadastro + i)->nome);
             return;
         }
@@ -288,11 +309,11 @@ void remover_aluno(Aluno *cadastro, int total) {
     printf("Aluno com RA %d nao encontrado.\n", ra_busca);
 }
 
-// Listagem com opção de ver todos ou filtrar por nome de curso
+// Listagem apenas de registros válidos (ativo == 1), mostrando o status 'A' ou 'I'
 void listar_alunos(Aluno *cadastro, int total) {
     int sub_op;
     printf("=== LISTAR ALUNOS ===\n");
-    printf("1 - Listar todos os alunos ativos\n");
+    printf("1 - Listar todos os alunos cadastrados\n");
     printf("2 - Listar por nome de curso\n");
     printf("Opcao: ");
     scanf("%d", &sub_op);
@@ -301,13 +322,14 @@ void listar_alunos(Aluno *cadastro, int total) {
     int encontrou = 0;
     
     if (sub_op == 1) {
-        printf("\n--- LISTA DE TODOS OS ALUNOS ATIVOS ---\n");
+        printf("\n--- LISTA DE TODOS OS ALUNOS ---\n");
         for (int i = 0; i < total; i++) {
             if ((cadastro + i)->ativo == 1) {
-                printf("RA: %d | Nome: %s | Semestre: %d | Curso: %s | Horas Concluidas: %dh\n",
+                printf("RA: %d | Nome: %s | Semestre: %d | Status: %c | Curso: %s | Horas Concluidas: %dh\n",
                        (cadastro + i)->ra,
                        (cadastro + i)->nome,
                        (cadastro + i)->semestre,
+                       (cadastro + i)->status,
                        (cadastro + i)->curso_matriculado.nome_curso,
                        (cadastro + i)->curso_matriculado.carga_horaria);
                 encontrou = 1;
@@ -322,10 +344,11 @@ void listar_alunos(Aluno *cadastro, int total) {
         printf("\n--- ALUNOS MATRICULADOS NO CURSO: %s ---\n", curso_busca);
         for (int i = 0; i < total; i++) {
             if ((cadastro + i)->ativo == 1 && strcmp((cadastro + i)->curso_matriculado.nome_curso, curso_busca) == 0) {
-                printf("RA: %d | Nome: %s | Semestre: %d | Horas Concluidas: %dh\n",
+                printf("RA: %d | Nome: %s | Semestre: %d | Status: %c | Horas Concluidas: %dh\n",
                        (cadastro + i)->ra,
                        (cadastro + i)->nome,
                        (cadastro + i)->semestre,
+                       (cadastro + i)->status,
                        (cadastro + i)->curso_matriculado.carga_horaria);
                 encontrou = 1;
             }
